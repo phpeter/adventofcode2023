@@ -7,13 +7,6 @@ import (
 	"strings"
 )
 
-func isDigit(char string) bool {
-	_, err := strconv.Atoi(char)
-	// err == nil means this is a digit
-	// err != nil means this is a char
-	return err == nil
-}
-
 func checkForWord(line []string, words [][]string) (string, bool) {
 	// words input will be something like {{"two","2"}, {"three","3"}}
 
@@ -38,7 +31,7 @@ var ltrs = map[string][][]string{
 
 func findLastNumber(line []string) (string, bool) {
 	for i := len(line) - 1; i > -1; i-- {
-		if isDigit(line[i]) {
+		if utils.IsDigit(line[i]) {
 			return line[i], true
 		}
 
@@ -54,7 +47,7 @@ func findLastNumber(line []string) (string, bool) {
 
 func findFirstNumber(line []string) (string, bool) {
 	for i := 0; i < len(line); i++ {
-		if isDigit(line[i]) {
+		if utils.IsDigit(line[i]) {
 			return line[i], true
 		}
 

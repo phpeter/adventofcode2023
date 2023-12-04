@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func InitAndReadFile() []string {
@@ -35,4 +37,21 @@ func InitAndReadFile() []string {
 	}
 
 	return lines
+}
+
+func LinesToMatrix(lines []string) [][]string {
+	splitLines := make([][]string, len(lines))
+
+	for i, line := range lines {
+		splitLines[i] = strings.Split(line, "")
+	}
+
+	return splitLines
+}
+
+func IsDigit(char string) bool {
+	_, err := strconv.Atoi(char)
+	// err == nil means this is a digit
+	// err != nil means this is a char
+	return err == nil
 }

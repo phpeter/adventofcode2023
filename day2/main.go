@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	part1()
-	part2()
+	Part1()
+	Part2()
 }
 
-func part1() {
+func Part1() {
 	lines := utils.InitAndReadFile()
 
 	redMax := 12
@@ -70,7 +70,7 @@ func part1() {
 	fmt.Println("part 1 result:", sum)
 }
 
-func part2() {
+func Part2() {
 	lines := utils.InitAndReadFile()
 
 	sum := 0
