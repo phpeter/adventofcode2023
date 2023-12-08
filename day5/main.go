@@ -176,49 +176,46 @@ this returns a set of ranges in start, range order
 10 5 12 7
 */
 func filterNumber(ranges [][]int, bags []Bag) [][]int {
-	// Sort the bags by source start
+	newRanges := make([][]int, 0)
+
+	// Sort bags by smallest source first
 	sort.Slice(bags, func(i, j int) bool {
 		return bags[i].Source < bags[j].Source
 	})
 
-	newRanges := make([][]int, 0)
-
 	for _, r := range ranges {
-		start := r[0]
-		end := start + r[1]
+		s := r[0]
+		remainingRange := r[1]
 
 		for _, bag := range bags {
+			if remainingRange <= 0 {
+				break
+			}
+
 			bagStart := bag.Source
 			bagEnd := bag.Source + bag.Range
 			diff := bag.Source - bag.Dest
 
-			if end <= bagStart {
-				// If the range is completely before the bag, add it as is and move to the next range
-				newRanges = append(newRanges, []int{start, end - start})
-				break
-			} else if start < bagEnd {
-				// If the range starts before the bag, add the part before the bag
-				if start < bagStart {
-					newRanges = append(newRanges, []int{start, bagStart - start})
-					start = bagStart
-				}
-
-				// If the range overlaps with the bag, transform the overlapping part
-				overlapEnd := intMin(end, bagEnd)
-				newRanges = append(newRanges, []int{start - diff, overlapEnd - start})
-				start = overlapEnd
-
-				if start >= end {
-					// If we've processed the entire range, break out of the loop
-					break
-				}
+			// Check if the current start is before the current bag
+			if s < bagStart {
+				overlap := intMin(bagStart-s, remainingRange)
+				newRanges = append(newRanges, []int{s, overlap})
+				s += overlap
+				remainingRange -= overlap
 			}
-			// Continue to the next bag if there's more range to process
+
+			// Check if there's still a range left to process within the current bag
+			if remainingRange > 0 && s >= bagStart && s < bagEnd {
+				overlap := intMin(bagEnd-s, remainingRange)
+				newRanges = append(newRanges, []int{s - diff, overlap})
+				s += overlap
+				remainingRange -= overlap
+			}
 		}
 
-		if start < end {
-			// Add any remaining range that didn't fit into any bag
-			newRanges = append(newRanges, []int{start, end - start})
+		// Add any remaining range that wasn't covered by a bag
+		if remainingRange > 0 {
+			newRanges = append(newRanges, []int{s, remainingRange})
 		}
 	}
 
