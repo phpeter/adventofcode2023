@@ -176,86 +176,53 @@ this returns a set of ranges in start, range order
 10 5 12 7
 */
 func filterNumber(ranges [][]int, bags []Bag) [][]int {
-	newRanges := make([][]int, 0)
-
-	// sort bags by smallest source first
+	// Sort the bags by source start
 	sort.Slice(bags, func(i, j int) bool {
 		return bags[i].Source < bags[j].Source
 	})
 
-	for _, r := range ranges {
-		s := r[0] // 79
-		r := r[1] // 14
+	newRanges := make([][]int, 0)
 
-		// SOIL BAGS:
-		// 52 50 48
-		// 50 98 2
-	Range:
+	for _, r := range ranges {
+		start := r[0]
+		end := start + r[1]
+
 		for _, bag := range bags {
-			// if source starts below bag, add raw numbers to output. start = start, range = bag start minus start
-			if s < bag.Source {
-				newRanges = append(newRanges, []int{s, bag.Source - s})
-				if s+r > bag.Source {
-					// reset new start to bag start
-					s = bag.Source
-					// reset range to remainder (range minus bag.Source - s)
-					r = r - (bag.Source - s)
+			bagStart := bag.Source
+			bagEnd := bag.Source + bag.Range
+			diff := bag.Source - bag.Dest
+
+			if end <= bagStart {
+				// If the range is completely before the bag, add it as is and move to the next range
+				newRanges = append(newRanges, []int{start, end - start})
+				break
+			} else if start < bagEnd {
+				// If the range starts before the bag, add the part before the bag
+				if start < bagStart {
+					newRanges = append(newRanges, []int{start, bagStart - start})
+					start = bagStart
+				}
+
+				// If the range overlaps with the bag, transform the overlapping part
+				overlapEnd := intMin(end, bagEnd)
+				newRanges = append(newRanges, []int{start - diff, overlapEnd - start})
+				start = overlapEnd
+
+				if start >= end {
+					// If we've processed the entire range, break out of the loop
+					break
 				}
 			}
-
-			if r <= 0 {
-				break Range
-			}
-
-			// now s should either be in or above bag
-			// if it is inside bag, grab what falls inside of bag range
-			if s > bag.Source && s < bag.Source+bag.Range {
-				// diff -> if source is 50 and dest is 52, this will be -2. Then we _subtract_ diff to move a num from source to dest
-				// example 1: source = 50, dest = 52, diff = -2, seed = 50. seed(50) - diff(-2) = 52
-				// example 2: source = 98, dest = 50, diff = 48, seed = 98. seed(98) - diff(48) = 50
-				diff := bag.Source - bag.Dest
-
-				// calculate how many numbers fall in to this bag
-				// example: bag source = 50, bag range = 20
-				// 			num start = 60, num range = 30
-				//			new range should be 10, so bag range(20) - (num start - bag source)(10)
-				overlap := intMin(bag.Range-(s-bag.Source), r)
-				newRanges = append(newRanges, []int{s - diff, overlap})
-
-				// calculate remainder
-				s = bag.Source + bag.Range
-				r = r - overlap
-			}
-
-			if r <= 0 {
-				break Range
-			}
-
-			// if it is above bag, we keep processing until we run out of bags
+			// Continue to the next bag if there's more range to process
 		}
 
-		// after we've gone through all the bags, if there are any remaining nums, add them directly
-		if r > 0 {
-			newRanges = append(newRanges, []int{s, r})
+		if start < end {
+			// Add any remaining range that didn't fit into any bag
+			newRanges = append(newRanges, []int{start, end - start})
 		}
-
 	}
 
 	return newRanges
-
-	// take s = 8, r = 10
-	// bagS = 10, bagR = 5
-	// if s < bagS
-	//     append [s, math.Min(bagS-s, r)] to ranges
-	// 	   if s + r > bagS
-	// 	       s = bagS
-
-	// if s + r > bagS
-	//     append [s+diff, math.Min(r, bagR)]
-
-	// if bagR < r
-	//     s = bagR
-	//     loop
 }
 
 func intMin(a int, b int) int {
